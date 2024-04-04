@@ -1,127 +1,64 @@
-import React, { useState, useEffect } from 'react'
-import { Header } from './Header'
+import React, { useState } from 'react'
+import { desencriptMessage, desencriptedAscii, encriptMessage, genKeys } from './assets/resources'
+import { getAscii } from './assets/resources'
 
 export const ElGamal = () => {
-  
-  // public keys
-  const [emPubKey, setEmPubKey] = useState(0)
-  const [rePubKey, setRePubKey] = useState(0)
-  //private keys
-  const [emPrivKey, setEmPrivKey] = useState(0)
-  const [rePrivKey, setRePrivKey] = useState(0)
-  //messaje
-  let [messajeAscii, setMessajeAscii] = useState([])
-  const [messajeEncripted, setMessajeEncripted] = useState([])
-  const [messajeDesencripted, setMessajeDesencripted] = useState([])
-  //desencriptacion
-  const [sval, setSval] = useState(0)
 
-  // NOTE: onFormSubmit
+  const [generator, setGenerator] = useState(0)
+  const [alicePriv, setAlicePriv] = useState(0)
+  const [bobPriv, setBobPriv] = useState(0)
+  const [alicePub, setAlicePub] = useState(0)
+  const [bobPub, setBobPub] = useState(0)
+  const [message, setMessage] = useState('')
+  const [primo, setPrimo] = useState(0)
+  const [mesAscii, setMesAscii] = useState([])
+  const [encripted, setEncripted] = useState([])
+  const [desencripted, setDesencripted] = useState([])
+  const [sVal, setSVal] = useState(0)
+  const [messageDesencripted, setMessageDesencripted] = useState([])
+
   const encriptar = ( event ) => {
     event.preventDefault()
+    const fields = new FormData( event.target )
 
-    const values = new FormData(event.target)
-    const primo = values.get('pval')
-    const clave = values.get('qval')
-    const generador = values.get('gval')
-    
-    //emisor
-    const { privKey: privem, pubKey: pubem } = genKeys(clave, generador, primo)
-    setEmPrivKey(privem)
-    setEmPubKey(pubem)
+    const pval = fields.get('pval')
+    const gval = fields.get('gval')
+    const mesval = fields.get('mesval')
+    setPrimo(pval)
+    setGenerator(gval)
+    setMessage(mesval)
 
-    //receptor
-    const { privKey: privre, pubKey: pubre } = genKeys(clave, generador, primo)
-    setRePrivKey(privre)
-    setRePubKey(pubre)
-    const encripted = encriptMesssage(pubre, privem, primo) 
-    setMessajeEncripted(encripted)
+    const { alpriv, alpub, bopriv, bopub } = genKeys( pval, gval )
+    setAlicePriv(alpriv)
+    setAlicePub(alpub)
+    setBobPriv(bopriv)
+    setBobPub(bopub)
+
+    setMesAscii(getAscii(mesval))
+    setEncripted(encriptMessage(primo, mesAscii, alpub, bopriv))
   }
 
-  const genKeys = ( clave, generador, primo ) => {
-    const privKey = 2 + Math.floor(Math.random() * (clave - 2))
-    const pubKey = Math.pow(generador, privKey) % primo 
-    
-    return { privKey, pubKey }
-  }
-
-  // NOTE: messaje to ASCII
-  const messaje = 'ElGamal'
-
-  const mesToAscii = (messaje) => {
-    messajeAscii = []
-    for (let i = 0; i < messaje.length; i++) {
-      const element = messaje.charCodeAt(i);
-      messajeAscii.push(element)
-    }
-  }
-  mesToAscii(messaje)
-
-  // NOTE: encript messaje
-  const encriptMesssage = ( pubre, privem, primo ) => {
-    const encripted = []
-    const aux = Math.pow(pubre, privem)
-    for (let i = 0; i < messajeAscii.length; i++) {
-      const op = (messajeAscii[i] * aux) % primo
-      encripted.push(op)
-    }
-    return encripted
-  }
-
-
-  // PERF: medio rara la we esta
-  // this must desencript the mssage but it just returns a random value
-  // (it is nt a random value but it is no the expected value)
-  
-  
-  
-  const desencriptar = () => {
+  const desencriptar = ( event ) => {
     event.preventDefault()
-
-    const values = new FormData(event.target)
-    const primo = values.get('pval')
-    const clave = values.get('qval')
-
-    const desencripted = desencriptMessage(primo, clave)
-    setMessajeDesencripted(desencripted)
-
+    setDesencripted(
+      desencriptMessage(encripted, bobPub, alicePriv, primo, setSVal)
+    )
+    desencriptedAscii(desencripted, setMessageDesencripted)
   }
-
-  const calcularS = (primo, clave ) => {
-    console.log({primo, clave})
-    const aux = rePrivKey - 1 - clave
-    console.log(aux)
-    const s = 1 / Math.pow(emPubKey, aux) % primo
-    setSval(s)
-    return s
-  }
-
-  const desencriptMessage = (primo, clave) => {
-    const desencripted = []
-    const s = calcularS(primo ,clave)
-    for (let i = 0; i < messajeEncripted.length; i++) {
-      const op = (messajeEncripted[i] * s) % primo
-      desencripted.push(op)
-    }
-
-    return desencripted
-  }
-
+  
   return (
     <>
-      <Header/>
       <h1 style={{marginTop:20}}>El Gamal</h1>
       <div style={{marginTop:40}}>
 
-        <form onSubmit={ encriptar } onReset={desencriptar}>
-          <label>mensaje: '{messaje}'</label> <br/>
+        <form onSubmit={ encriptar } onReset={ desencriptar }>
+          <span>
+            <label> mensaje:</label>
+            <input type='text' name='mesval'/>
+          </span>
           <span>
             <label> p(numero primo):</label>
             <input type='number' name='pval'/>
-          </span>
-          <span>
-            <label> q(divisor de p-1):</label>
-            <input type='number' name='qval'/>
           </span>
           <span>
             <label> g(generador de orden q):</label>
@@ -131,20 +68,26 @@ export const ElGamal = () => {
           <button type='submit'>encriptar</button>
           <button type='reset'>desencriptar</button>
         </form>
-        <label>Clave privada del emisor: {emPrivKey}</label> <br/>
-        <label>Clave publica del emisor: {emPubKey}</label> <br/>
 
-        <label>Clave privada del receptor: {rePrivKey}</label> <br/>
-        <label>Clave publica del receptor: {rePubKey}</label> <br/>
+        <label>Mensaje a encriptar: { message }</label> <br/>
+        <label>Numero primo: { primo }</label> <br/>
+        <label>Generador: { generator } </label> <br/>
+
+        <label>Clave privada del Alice: { alicePriv }</label> <br/>
+        <label>Clave publica del Alice: { alicePub }</label> <br/>
+
+        <label>Clave privada del Bob: { bobPriv }</label> <br/>
+        <label>Clave publica del Bob: { bobPub }</label> <br/>
         
-        <h4>mensaje en ascii: {`[ ${messajeAscii.join(', ')} ]`}</h4>
-        <h4>mensaje encriptado: {`[ ${messajeEncripted.join(', ')} ]`}</h4> <br/>
+        <h4>mensaje en ascii: { `[ ${mesAscii.join(', ')} ]` }</h4>
+        <h4>mensaje encriptado: { `[ ${encripted.join(', ')} ]` }</h4> <br/>
 
-        <h4>Mensaje que se envia: {`[ ${emPubKey}, [ ${messajeEncripted.join(', ')} ] ]`}</h4>
+        <h4>Mensaje que se envia: { `[ ${bobPub}, [ ${encripted.join(', ')} ] ]` }</h4>
 
         <h3>Desencriptacion</h3>
-        <h4>Valor calculado para desencriptar: {sval}</h4>
-        <h4>mensaje desencriptado: {`[ ${messajeDesencripted.join(', ')} ]`}</h4>
+        <h4>Valor calculado para desencriptar: {sVal}</h4>
+        <h4>mensaje desencriptado en ascii: {`[ ${desencripted.join(', ')} ]`}</h4>
+        <h4>mensaje desencriptado: { messageDesencripted } </h4>
       </div>
     </>
   )
