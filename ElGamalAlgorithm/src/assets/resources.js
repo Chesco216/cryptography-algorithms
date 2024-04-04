@@ -9,7 +9,9 @@ export const genKeys = ( primo, gen ) => {
   // do {
   //   bopriv = 2 + Math.floor(Math.random() * (primo - 2))
   // } while (bopriv === alpriv);
-
+  // this code is for genrete a randow key
+  //but i give them ones cause the values were to high
+  //
   const alpriv = 6
   const bopriv = 3
 
