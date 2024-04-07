@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA Encryption</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>RSA Encryption</h1>
+        <form id="rsa-form">
+            <label for="p">Valor de p (primo): </label>
+            <input type="number" id="p" required><br>
+            <label for="q">Valor de q (primo): </label>
+            <input type="number" id="q" required><br>
+            <label for="e">Valor de e (coprimo con phi): </label>
+            <input type="number" id="e" required><br>
+            <button type="submit">Generar Claves</button>
+        </form>
+        <div id="results" style="display: none;">
+            <h2>Claves RSA Generadas:</h2>
+            <p id="public-key"></p>
+            <p id="private-key"></p>
+            <label for="message">Mensaje a cifrar (entero): </label>
+            <input type="number" id="message" required><br>
+            <button id="encrypt-btn">Cifrar Mensaje</button><br>
+            <p id="encrypted-message"></p>
+            <button id="decrypt-btn">Descifrar Mensaje</button><br>
+            <p id="decrypted-message"></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
