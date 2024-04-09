@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encriptación RC4</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        textarea,
+        input[type="text"] {
+            width: 300px;
+            height: 40px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #ffc107;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #ffca28;
+        }
+
+        textarea#resultado {
+            width: 300px;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            resize: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Encriptación RC4</h1>
+        <input type="text" id="textoPlano" placeholder="INGRESAR TEXTO:"><br>
+        <input type="text" id="clave" placeholder="Ingresa la clave de encriptación"><br>
+        <button onclick="encriptarDesencriptar()">Encriptar/Desencriptar</button><br><br>
+        <textarea id="resultado" placeholder="El resultado aparecerá aquí" readonly></textarea>
+    </div>
+
+    <script>
+        function encriptarDesencriptar() {
+            var textoPlano = document.getElementById('textoPlano').value;
+            var clave = document.getElementById('clave').value;
+            var resultado = document.getElementById('textoPlano').value;
+
+            if (esHexadecimal(resultado)) {
+                resultado = RC4Hex(resultado, clave);
+            } else {
+                resultado = RC4(resultado, clave);
+            }
+
+            document.getElementById('resultado').value = resultado;
+        }
+
+        function esHexadecimal(texto) {
+            var hexRegex = /^[0-9A-Fa-f]+$/;
+            return hexRegex.test(texto);
+        }
+
+        function RC4(texto, clave) {
+            var s = [], j = 0, x, res = '';
+            for (var i = 0; i < 256; i++) {
+                s[i] = i;
+            }
+            for (i = 0; i < 256; i++) {
+                j = (j + s[i] + clave.charCodeAt(i % clave.length)) % 256;
+                x = s[i];
+                s[i] = s[j];
+                s[j] = x;
+            }
+            i = 0;
+            j = 0;
+            for (var y = 0; y < texto.length; y++) {
+                i = (i + 1) % 256;
+                j = (j + s[i]) % 256;
+                x = s[i];
+                s[i] = s[j];
+                s[j] = x;
+                res += ("0" + (texto.charCodeAt(y) ^ s[(s[i] + s[j]) % 256]).toString(16)).slice(-2);
+            }
+            return res.toUpperCase();
+        }
+
+        function RC4Hex(texto, clave) {
+            texto = texto.match(/.{1,2}/g).map(function (byte) {
+                return parseInt(byte, 16);
+            });
+
+            var s = [], j = 0, x, res = '';
+            for (var i = 0; i < 256; i++) {
+                s[i] = i;
+            }
+            for (i = 0; i < 256; i++) {
+                j = (j + s[i] + clave.charCodeAt(i % clave.length)) % 256;
+                x = s[i];
+                s[i] = s[j];
+                s[j] = x;
+            }
+            i = 0;
+            j = 0;
+            for (var y = 0; y < texto.length; y++) {
+                i = (i + 1) % 256;
+                j = (j + s[i]) % 256;
+                x = s[i];
+                s[i] = s[j];
+                s[j] = x;
+                res += String.fromCharCode(texto[y] ^ s[(s[i] + s[j]) % 256]);
+            }
+            return res;
+        }
+    </script>
+
+</body>
+
+</html>
